@@ -1,0 +1,19 @@
+.App {
+  font-family: sans-serif;
+  text-align: center;
+  background-color: red;
+  border-color: 5px solid red;
+}
+.outerFrame {
+    position: relative;
+  top: 20px; /* Padding to the top */
+  left: 20px; /* Padding to the left */
+  width: 70vw; /* One-fourth of the viewport width */
+  height: 70vh; /* One-fourth of the viewport height */
+  border: 2px solid #007bff; /* Blue border */
+  border-radius: 10px; /* Rounded corners */
+  padding: 20px; /* Adjust padding as needed */
+  box-sizing: border-box; /* Include padding and border in the total width and height */
+  overflow: hidden;
+  }
+  
