@@ -48,7 +48,6 @@ const Annotataor = ({ options, idata }) => {
             console.log(data_diff)
         } 
     };
-  
     const onChange = (updatedData) => { 
         if(selectedId!==null && shifted){
                 const indexSelected = updatedData.findIndex(data=>data.id === selectedId)
@@ -72,6 +71,28 @@ const Annotataor = ({ options, idata }) => {
                 }
         }
         setData(updatedData)
+
+        // const new_data = data
+        // if(selectedId!==null && shifted){
+        //     const index = data.findIndex(data=>data.id ==="QtPJeW")
+        //     console.log("this is victim now, ", index)
+        //     if(index !== -1 && index !== -1){
+        //         const newdata = {...data[index],
+        //                         mark:{
+        //                             ...data[index].mark,
+        //                             x: data[index].mark.x +1,
+        //                             y: data[index].mark.y +1,
+        //                             width: data[index].mark.width,
+        //                             height: data[index].mark.height
+        //                         }
+        //         }
+        //         new_data[index] = newdata
+        //         console.log("this is new data ,", new_data)
+        //         // setData(newbbox)
+        //         console.log("this is old data ,", data)
+        //         setData(new_data)
+        //     }
+        // }
         
       };
     useEffect(() => {
