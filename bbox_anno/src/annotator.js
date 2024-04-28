@@ -5,6 +5,7 @@ import Draggable from "react-draggable";
 import { createBbox } from './reducers/bboxReducer'
 import { useSelector, useDispatch } from 'react-redux'
 import { cloneDeep } from 'lodash'; 
+import html2canvas from "html2canvas";
 const Annotataor = ({ options, idata }) => {
     const [pageSize, setPageSize] = useState({
       width: window.innerWidth,
@@ -95,6 +96,46 @@ const Annotataor = ({ options, idata }) => {
         // }
         
       };
+      
+      const [blendedImage, setBlendedImage] = useState(null);
+
+      useEffect(() => {
+        async function blendImages() {
+          const fetchImage = async (src) => {
+            const response = await fetch(src);
+            const blob = await response.blob();
+            return URL.createObjectURL(blob);
+          };
+    
+          const firstImageSrc = await fetchImage("https://source.unsplash.com/random/800x600");
+          const secondImageSrc = await fetchImage("https://source.unsplash.com/random/400x300");
+    
+          const firstImage = new Image();
+          firstImage.src = firstImageSrc;
+          firstImage.crossOrigin = "anonymous";
+    
+          const secondImage = new Image();
+          secondImage.src = secondImageSrc;
+          secondImage.crossOrigin = "anonymous";
+    
+          // Ensure images are loaded before drawing them to the canvas
+          await Promise.all([firstImage.decode(), secondImage.decode()]);
+    
+          const canvas = document.createElement("canvas");
+          canvas.width = firstImage.width;
+          canvas.height = firstImage.height;
+    
+          const ctx = canvas.getContext("2d");
+          ctx.drawImage(firstImage, 0, 0);
+          ctx.globalAlpha = 0.5; // Adjust the transparency of the second image
+          ctx.drawImage(secondImage, 0, 0);
+    
+          // Set the blended image data URL
+          setBlendedImage(canvas.toDataURL());
+        }
+    
+        blendImages();
+      }, []);
     useEffect(() => {
     // Update local state whenever the Redux store changes
     setData(cloneDeep(test_redux));
@@ -129,7 +170,7 @@ const Annotataor = ({ options, idata }) => {
         <Draggable disabled={true}>
         <div>
         <ReactPictureAnnotation
-          image="https://source.unsplash.com/random/800x600"
+          image={blendedImage}
           onSelect={onSelect}
           onChange={onChange}
           width={pageSize.width}
