@@ -2,11 +2,11 @@ import React, { useState, useEffect } from "react";
 import { ReactPictureAnnotation } from "react-picture-annotation";
 import Dropdowns from "./dropdown";
 import Draggable from "react-draggable";
-import { createBbox } from './reducers/bboxReducer'
+import  createBbox  from './reducers/bboxReducer'
 import { useSelector, useDispatch } from 'react-redux'
 import { cloneDeep } from 'lodash'; 
 import html2canvas from "html2canvas";
-const Annotataor = ({ options, idata }) => {
+const Annotator = ({ options, idata }) => {
     const [pageSize, setPageSize] = useState({
       width: window.innerWidth,
       height: window.innerHeight
@@ -185,4 +185,4 @@ const Annotataor = ({ options, idata }) => {
   };
   
   
-export default Annotataor;
+export default Annotator;
