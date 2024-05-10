@@ -8,7 +8,8 @@ const Annotator = ({ options,
     setbboxesData,
     selectedId,
     setselectedId,
-    isDraggable
+    isDraggable,
+    viewBboxes
  }) => {
     const IShapeStyle = {
         padding: 5,
@@ -32,7 +33,9 @@ const Annotator = ({ options,
     };
     const onChange = (annotation) => { 
         const new_anno = [...annotation]
-        setbboxesData(annotation)
+        if(!viewBboxes){
+            setbboxesData(annotation)
+        }
       };
       
     const CustomInputElement = ({value, onChange, onBlur}) => {

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import Annotator from "./components/Annotator"
 import "./styles.css";
 import {
@@ -11,7 +11,10 @@ import {
     ListContent,
     Menu,
     Segment,
-    Container,
+    Grid,
+    GridColumn,
+    Radio,
+    Header,
     Icon
 } from 'semantic-ui-react'
 import InputField from './components/InputField'
@@ -34,6 +37,7 @@ const App = ({options, idata, annotate_image}) => {
     const [selectedId, setselectedId] = useState(null)
     const [id, setId] = useState(null)
     const [isDraggable, setIsDraggable] = useState(false)
+    const [blendedImage, setBlendedImage] = useState(null)
     const [isShifted, setisShifted] = useState(false)
     const [deltaAdjustment, setdeltaAdjustment] = useState({
         bboxHeight: 0,
@@ -105,6 +109,7 @@ const App = ({options, idata, annotate_image}) => {
 
 
     useEffect(() => {
+        document.body.style.zoom = "100%"
         const params = new URLSearchParams(window.location.search)
         const idParam = params.get('id')
         const idParam2 = params.get('id2')
@@ -191,34 +196,17 @@ const App = ({options, idata, annotate_image}) => {
         }
     }, [bboxesData])
 
-    // const [shapes, setShapes] = useState([
-    //     {color: 'blue', enabled: true, opacity: 0.2},
-    //     {color: 'green', enabled: true, opacity: 0.2},
-    //     {color: 'red', enabled: true, opacity: 0.2}
-    // ])
-    // const [canvasDataURL, setCanvasDataURL] = useState('')
-    // useEffect(() => {
-    //     const canvas = document.createElement('canvas')
-    //     const ctx = canvas.getContext('2d')
-    //     ctx.clearRect(0,0,canvas.width, canvas.height)
-
-    //     shapes.forEach((shape, index) => {
-    //         if(shape.enabled) {
-    //             ctx.globalAlpha = shape.opacity
-    //             ctx.fillStyle = shape.color
-    //             ctx.fillRect(index * 15 + 70, index * 15 + 50, 100, 50)
-    //         }
-    //     })
-
-    //     const dataURL = canvas.toDataURL()
-    //     console.log("this is canvas data url ", dataURL)
-    //     setCanvasDataURL(dataURL)
-    // }, [shapes])
+    const KeyValue = ({keyName, value}) => {
+        <div>
+            <Header as='h4'>{keyName}</Header>
+            <p>{value}</p>
+        </div>
+    }
 
     const [shapes, setShapes] = useState([
-        { src: 'https://source.unsplash.com/cat/800x600', enabled: true, opacity: 0.2 },
-        { src: 'https://source.unsplash.com/random/800x600', enabled: true, opacity: 0.2 },
-        { src: 'https://source.unsplash.com/random/800x600', enabled: true, opacity: 0.2 }
+        { src: 'https://source.unsplash.com/reandom/1024x1024', enabled: true, opacity: 0.2, drawOrder: 0},
+        { src: 'https://source.unsplash.com/random/1024x1024', enabled: true, opacity: 0.2, drawOrder: 1 },
+        { src: 'https://source.unsplash.com/random/1024x1024', enabled: true, opacity: 0.2, drawOrder: 2 }
     ]);
 
     const [canvasDataURL, setCanvasDataURL] = useState('');
@@ -227,50 +215,54 @@ const App = ({options, idata, annotate_image}) => {
 
     useEffect(() => {
         const canvas = document.createElement('canvas');
-        const ctx = canvas.getContext('2d');
+        const sortedShapes = shapes
+            .slice()
+            .sort((a, b) => b.opacity - a.opacity || a.drawOrder - b.drawOrder)
+        const loadImages = async (sortedShapes, canvas) => {
+            const ctx = canvas.getContext('2d')
+            const enabledShapes = sortedShapes.filter(shape => shape.enabled)
+            canvas.width = 1024
+            canvas.height = 1024
 
-        // Calculate maximum width and height among images
-        const maxWidth = Math.max(...shapes.map(shape => shape.width || 800));
-        const maxHeight = Math.max(...shapes.map(shape => shape.height || 600));
+            const centerX = canvas.width / 2
+            const centerY = canvas.height / 2
+            ctx.clearRect(0, 0, canvas.width, canvas,height)
 
-        // Set canvas size
-        canvas.width = maxWidth;
-        canvas.height = maxHeight;
-        setCanvasWidth(maxWidth);
-        setCanvasHeight(maxHeight);
+            for (const shape of enabledShapes) {
+                const image = new Image()
+                image.src = shape.src
+                image.crossOrigin = "anonymous"
+                await new Promise((resolve, reject) => {
+                    image.onload = resolve
+                    image.onerror = reject
+                })
 
-        const centerX = canvas.width / 2;
-        const centerY = canvas.height / 2;
+                const x = centerX - image.width / 2
+                const y = centerY - image.height / 2
 
-        const loadImages = async () => {
-            await Promise.all(shapes.map(async (shape) => {
-                if (shape.enabled) {
-                    const img = new Image();
-                    img.crossOrigin = "anonymous"; // To prevent CORS issues
-                    img.src = shape.src;
-                    await new Promise(resolve => {
-                        img.onload = () => resolve();
-                    });
-                    ctx.globalAlpha = shape.opacity;
+                ctx.drawImage(image, x, y)
+            }
+            const dataURL = canvas.toDataURL()
+            console.log("this is the data url of canvas, ", dataURL)
+            setCanvasDataURL(dataURL)
+        }
+        loadImages(sortedShapes, canvas)
 
-                    // Position images in the middle
-                    const imageX = centerX - img.width / 2;
-                    const imageY = centerY - img.height / 2;
-                    ctx.drawImage(img, imageX, imageY, img.width, img.height);
-                }
-            }));
-
-            const dataURL = canvas.toDataURL();
-            setCanvasDataURL(dataURL);
-        };
-
-        loadImages();
     }, [shapes]);
 
     const handleToggle = (index) => {
         setShapes(prevShapes => {
             const updatedShapes = [...prevShapes]
             updatedShapes[index].enabled = !updatedShapes[index].enabled
+            if(updatedShapes[index].enabled){
+                updatedShapes.forEach(shape => {
+                    if(shape !== updatedShapes[index] && shape.drawOder > updatedShapes[index].drawOder){
+                        shape.drawOrder=shape.drawOrder - 1
+                    }
+                })
+            } else {
+                updatedShapes[index].drawOder = -1
+            }
             return updatedShapes
         })
     }
@@ -282,6 +274,8 @@ const App = ({options, idata, annotate_image}) => {
             return updatedShapes
         })
     }
+
+    const [viewBboxes, setViewBboxes] = useState(false)
     return (
         <div className="App">
             <div className="AnnotatorBorder" style={{ width: 2/3*pageSize.width, height: 2/3*pageSize.height}}>
@@ -289,17 +283,18 @@ const App = ({options, idata, annotate_image}) => {
                 disabled={!isDraggable}
                 bounds={{left: -1/3*pageSize.width, top: -1/3*pageSize.height, right: 0, bottom: 0}}
                 defaultPosition={{x: -1/6*pageSize.width, y: -1/6*pageSize.height}}>
-                    <div>
+                    <div style={{position: 'relative'}}>
                         <Annotator
                             options={options}
                             pageSize={pageSize}
                             annotate_image={canvasDataURL}
-                            bboxesData={bboxesData}
+                            bboxesData={!viewBboxes? bboxesData: []}
                             setbboxesData={setbboxesData}
                             selectedId={selectedId}
                             setselectedId={setselectedId}
                             isDraggable={isDraggable}
                             setdeltaAdjustment={setdeltaAdjustment}
+                            viewBboxes={viewBboxes}
                         />
                     </div>
                 </Draggable>
@@ -331,11 +326,20 @@ const App = ({options, idata, annotate_image}) => {
             </Draggable>
             <Draggable disabled = {!isDraggable}>
                 <div className="BboxList" style={isDraggable ? {cursor:'grab'}: {cursor: 'default'}}>
-                    <Segment style={{overflow: 'auto', height: '100%', background: '#f6e6f9'}}>
+                    <Radio
+                        toggle
+                        onChange={(e, data) => setViewBboxes(data.checked)}
+                        style={{position: 'relative', top: '-10px'}}
+                    />
+                    <Icon size="large" name="eye slash" style={{position: 'relative', top: '-15px', right: '-10px'}}/>
+                    <Header as='h4' icon style={{position: 'realitive', top: '-15px', right: '-15px'}}>
+                        Hide Bboxes
+                    </Header>
+                    <Segment style={{overflow: 'auto', height: '90%', background: '#f6e6f9', top: '-30px'}}>
                         <Menu vertical style={{width:'100%'}}>
                             {bboxesData.map((data)=>(
                                 <Menu.Item key={data.id} onClick={()=>{return setselectedId(data.id)}}>
-                                    <Icon name='dropbox'/>
+                                    <Icon name='object ungroup outline'/>
                                     {data.comment}
                                 </Menu.Item>
                             ))}
@@ -360,6 +364,23 @@ const App = ({options, idata, annotate_image}) => {
                                     </Menu.Item>
                                 ))
                             }
+                        </Menu>
+                    </Segment>
+                </div>
+            </Draggable>
+            <Draggable disabled = {!isDraggable}>
+                <div className="HorizontalParametersMenu" style={isDraggable?{cursor:'grab'}: {cursor: 'default'}}>
+                    <Segment style={{overflow: 'auto', height: '100%', width: '100%', background: '#b5a9d9'}}>
+                        <Menu horizontal="true" style={{width: '100%'}} secondary >
+                            {[...Array(20).keys()].map((data) => (
+                                <Menu.Item key={data}>
+
+                                    <Segment>
+                                    <Header> Key_Name: </Header>
+                                    <p>Value</p>
+                                    </Segment>
+                                </Menu.Item>
+                            ))}
                         </Menu>
                     </Segment>
                 </div>

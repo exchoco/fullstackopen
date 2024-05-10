@@ -1,15 +1,15 @@
 .App {
   display: flex;
-  background-color: #d8c5cc;
+  background-color: #f0e8ff;
 }
 .AnnotatorBorder {
     flex: 1;
-    border: 2px solid #d8c5cc;
+    border: 2px solid #d8c5ff;
     border-radius: 2vw;
-    background-color: #d8c5cc;
+    background-color: #d9d9d9;
     overflow: hidden;
     box-sizing: border-box;
-    box-shadow: 0 2px 2px #d8c5cc;
+    box-shadow: 0 2px 2px #3e3337;
     position: absolute;
     left: calc(280px);
     top: calc(50px);
@@ -21,20 +21,20 @@
 
 .BboxSpecForm{
     flex: 1;
-    border: 2px solid #d8c5cc;
+    border: 2px solid #d8c5ff;
     border-radius: 1vw;
-    background-color: #d8c5cc;
+    background-color: #f0e8ff;
     overflow: hidden;
     box-sizing: border-box;
     position: absolute;
     font-family: 'Quicksand', sans-serif;
-    color: #3333;
+    color: #333333;
     width: 250px;
     height: 200px;
     padding: 20px;
     top: 460px;
     right: 0px;
-    box-shadow: 0 2px 4px #d8c5cc;
+    box-shadow: 0 2px 4px #3e3337;
     transition: background-color 0.3s ease;
 }
 
@@ -42,7 +42,7 @@
     flex: 1;
     border: 2px solid #d8c5cc;
     border-radius: 1vw;
-    background-color: #d8c5cc;
+    background-color: #f0e8ff;
     box-sizing: border-box;
     position: absolute;
     font-family: 'Quicksand', sans-serif;
@@ -52,7 +52,7 @@
     padding: 20px;
     top: calc(50px);
     right: 0px;
-    box-shadow: 0 2px 2px #d8c5cc;
+    box-shadow: 0 2px 2px #333333;
     transition: background-color 0.3s ease;
     overflow-y: 'auto';
 }
@@ -61,7 +61,7 @@
     flex: 1;
     border: 2px solid #d8c5cc;
     border-radius: 1vw;
-    background-color: #d8c5cc;
+    background-color: #f0e8ff;
     box-sizing: border-box;
     position: absolute;
     font-family: 'Quicksand', sans-serif;
@@ -71,30 +71,56 @@
     padding: 20px;
     top: calc(50px);
     left: calc(0px);
-    box-shadow: 0 2px 2px #d8c5cc;
+    box-shadow: 0 2px 2px #333333;
     transition: background-color 0.3s ease;
     overflow-y: 'auto';
 }
-.adjuster-menu-container {
-    background-color: #d8c5cc;
-    padding: 20px;
-    border-radius: 8px;
-    box-shadow: 0px 0px 10px 0px #3333;
-    bottom: 30px;
-    left: 280px;
+
+.HorizontalParametersMenu {
+    flex: 1;
+    border: 2px solid #d8c5ff;
+    border-radius: 1vw;
+    background-color: #f0e8ff;
+    box-sizing: border-box;
     position: absolute;
+    font-family: 'Quicksand', sans-serif;
+    color: #333333;
+    width: calc(66vw);
+    padding: 10px;
+    bottom: calc(100px);
+    left: calc(280px);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
+    transition: background-color 0.3s ease;
+    overflow-x: 'auto';
 }
-.adjuster-menu-container:hover{
-    background-color: #ead2dc;
-}
+
 .BboxSpecForm:hover{
-    background-color: #ead2dc;
+    background-color: #ead2d2
 }
 
 .BboxList:hover{
-    background-color: #ead2dc;
+    background-color: #ead2de;
 }
 
 .ParametersMenu:hover{
+    background-color: #ead2d2;
+}
+
+.adjuster-menu-container {
+    background-color: #f0e8ff;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0px 0px 10px 0px #3333;
+    bottom: calc(0px);
+    left: calc(280px);
+    position: absolute;
+}
+
+.adjuster-menu-item{
+    width: '100%';
+    height: '100%';
+}
+
+.adjuster-menu-container:hover{
     background-color: #ead2dc;
 }
