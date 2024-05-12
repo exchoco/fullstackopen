@@ -204,8 +204,8 @@ const App = ({options, idata, annotate_image}) => {
     }
 
     const [shapes, setShapes] = useState([
-        { src: 'https://source.unsplash.com/reandom/1024x1024', enabled: true, opacity: 0.2, drawOrder: 0},
-        { src: 'https://source.unsplash.com/random/1024x1024', enabled: true, opacity: 0.2, drawOrder: 1 },
+        { src: 'https://i.imgur.com/QaFi5Sf.jpeg', enabled: true, opacity: 0.2, drawOrder: 0},
+        { src: 'https://i.imgur.com/nxwvnNd.png', enabled: true, opacity: 0.2, drawOrder: 1 },
         { src: 'https://source.unsplash.com/random/1024x1024', enabled: true, opacity: 0.2, drawOrder: 2 }
     ]);
 
@@ -213,59 +213,163 @@ const App = ({options, idata, annotate_image}) => {
     const [canvasWidth, setCanvasWidth] = useState(0);
     const [canvasHeight, setCanvasHeight] = useState(0);
 
+    // useEffect(() => {
+    //     const canvas = document.createElement('canvas');
+    //     const sortedShapes = shapes
+    //         .slice()
+    //         .sort((a, b) => b.opacity - a.opacity || a.drawOrder - b.drawOrder)
+    //     const loadImages = async (sortedShapes, canvas) => {
+    //         const ctx = canvas.getContext('2d')
+    //         const enabledShapes = sortedShapes.filter(shape => shape.enabled)
+    //         canvas.width = 1024
+    //         canvas.height = 1024
+
+    //         const centerX = canvas.width / 2
+    //         const centerY = canvas.height / 2
+    //         ctx.clearRect(0, 0, canvas.width, canvas,height)
+
+    //         for (const shape of enabledShapes) {
+    //             const image = new Image()
+    //             image.src = shape.src
+    //             image.crossOrigin = "anonymous"
+    //             await new Promise((resolve, reject) => {
+    //                 image.onload = resolve
+    //                 image.onerror = reject
+    //             })
+
+    //             const x = centerX - image.width / 2
+    //             const y = centerY - image.height / 2
+
+    //             ctx.drawImage(image, x, y)
+    //         }
+    //         const dataURL = canvas.toDataURL()
+    //         console.log("this is the data url of canvas, ", dataURL)
+    //         setCanvasDataURL(dataURL)
+    //     }
+    //     loadImages(sortedShapes, canvas)
+
+    // }, [shapes]);
+
     useEffect(() => {
         const canvas = document.createElement('canvas');
         const sortedShapes = shapes
-            .slice()
-            .sort((a, b) => b.opacity - a.opacity || a.drawOrder - b.drawOrder)
+          .slice()
+          .sort((a, b) => b.opacity - a.opacity || a.drawOrder - b.drawOrder);
+      
         const loadImages = async (sortedShapes, canvas) => {
-            const ctx = canvas.getContext('2d')
-            const enabledShapes = sortedShapes.filter(shape => shape.enabled)
-            canvas.width = 1024
-            canvas.height = 1024
-
-            const centerX = canvas.width / 2
-            const centerY = canvas.height / 2
-            ctx.clearRect(0, 0, canvas.width, canvas,height)
-
-            for (const shape of enabledShapes) {
-                const image = new Image()
-                image.src = shape.src
-                image.crossOrigin = "anonymous"
-                await new Promise((resolve, reject) => {
-                    image.onload = resolve
-                    image.onerror = reject
-                })
-
-                const x = centerX - image.width / 2
-                const y = centerY - image.height / 2
-
-                ctx.drawImage(image, x, y)
+          const ctx = canvas.getContext('2d');
+          let maxWidth = 0;
+          let maxHeight = 0;
+          const enabledShapes = sortedShapes.filter(shape => shape.enabled);
+      
+          // Load the first enabled image to determine canvas size
+          const firstImage = new Image();
+          firstImage.src = enabledShapes[0].src;
+          firstImage.crossOrigin = "anonymous";
+          await new Promise((resolve, reject) => {
+            firstImage.onload = () => {
+              maxWidth = firstImage.width;
+              maxHeight = firstImage.height;
+              canvas.width = maxWidth;
+              canvas.height = maxHeight;
+              resolve();
+            };
+            firstImage.onerror = reject;
+          });
+      
+          const centerX = canvas.width / 2;
+          const centerY = canvas.height / 2;
+          ctx.clearRect(0, 0, canvas.width, canvas.height);
+      
+          for (let i = 0; i < enabledShapes.length; i++) {
+            const shape = enabledShapes[i];
+            const image = new Image();
+            image.src = shape.src;
+            image.crossOrigin = "anonymous";
+            await new Promise((resolve, reject) => {
+              image.onload = resolve;
+              image.onerror = reject;
+            });
+      
+            const x = centerX - image.width / 2;
+            const y = centerY - image.height / 2;
+      
+            ctx.globalAlpha = shape.opacity;
+      
+            // Map black pixels to a contrasting color for images other than the first one
+            if (i > 0) {
+              const imageData = ctx.getImageData(x, y, image.width, image.height);
+              const data = imageData.data;
+              for (let j = 0; j < data.length; j += 4) {
+                if (data[j] === 0 && data[j + 1] === 0 && data[j + 2] === 0) {
+                  // Assign a contrasting color
+                  data[j] = 255 - data[j]; // R
+                  data[j + 1] = 255 - data[j + 1]; // G
+                  data[j + 2] = 255 - data[j + 2]; // B
+                }
+              }
+              ctx.putImageData(imageData, x, y);
             }
-            const dataURL = canvas.toDataURL()
-            console.log("this is the data url of canvas, ", dataURL)
-            setCanvasDataURL(dataURL)
-        }
-        loadImages(sortedShapes, canvas)
+      
+            ctx.drawImage(image, x, y);
+          }
+      
+          // Convert canvas to data URL
+          const dataURL = canvas.toDataURL();
+          console.log("this is the data url of canvas: ", dataURL);
+          setCanvasDataURL(dataURL);
+        };
+      
+        loadImages(sortedShapes, canvas);
+      
+      }, [shapes]);
 
-    }, [shapes]);
+    // const handleToggle = (index) => {
+    //     setShapes(prevShapes => {
+    //         const updatedShapes = [...prevShapes]
+    //         updatedShapes[index].enabled = !updatedShapes[index].enabled
+    //         if(updatedShapes[index].enabled){
+    //             updatedShapes.forEach(shape => {
+    //                 if(shape !== updatedShapes[index] && shape.drawOder > updatedShapes[index].drawOder){
+    //                     shape.drawOrder=shape.drawOrder - 1
+    //                 }
+    //             })
+    //         } else {
+    //             updatedShapes[index].drawOder = -1
+    //         }
+    //         return updatedShapes
+    //     })
+    // }
 
     const handleToggle = (index) => {
         setShapes(prevShapes => {
-            const updatedShapes = [...prevShapes]
-            updatedShapes[index].enabled = !updatedShapes[index].enabled
-            if(updatedShapes[index].enabled){
-                updatedShapes.forEach(shape => {
-                    if(shape !== updatedShapes[index] && shape.drawOder > updatedShapes[index].drawOder){
-                        shape.drawOrder=shape.drawOrder - 1
-                    }
-                })
-            } else {
-                updatedShapes[index].drawOder = -1
+          const updatedShapes = [...prevShapes];
+          updatedShapes[index].enabled = !updatedShapes[index].enabled;
+      
+          // If shape is enabled, move it to the top of the draw order
+          if (updatedShapes[index].enabled) {
+            let maxDrawOrder = 0;
+            updatedShapes.forEach(shape => {
+              if (shape.enabled && shape.drawOrder >= maxDrawOrder) {
+                maxDrawOrder = shape.drawOrder + 1;
+              }
+            });
+            updatedShapes[index].drawOrder = maxDrawOrder;
+          } else {
+            // If shape is disabled, set its draw order to -1
+            updatedShapes[index].drawOrder = -1;
+          }
+      
+          // Reorder other shapes if necessary
+          updatedShapes.forEach(shape => {
+            if (shape !== updatedShapes[index] && shape.enabled && shape.drawOrder > updatedShapes[index].drawOrder) {
+              shape.drawOrder = shape.drawOrder - 1;
             }
-            return updatedShapes
-        })
-    }
+          });
+      
+          return updatedShapes;
+        });
+      };
 
     const handleOpacityChange = (index, opacity) => {
         setShapes(prevShapes => {
