@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { ReactPictureAnnotation } from "react-picture-annotation";
+import dropdown from "./dropdown"
+import CustomInputControl from "./CustomInputControl";
 
 const Annotator = ({ options,
     bboxesData,
@@ -26,7 +28,28 @@ const Annotator = ({ options,
         transformerBackground: "#5c7cfa",
         transformerSize: 10
     }
-  
+    const [boxLevelData, setBoxLevelData] = useState([
+        {
+          id: "BRa2xX",
+          groupName: "Google",
+          rotationDegree: "10"
+        },
+        {
+          id: "QtPJeW",
+          groupName: "Mozilla",
+          rotationDegree: "10"
+        },
+        {
+          id: "czysBh",
+          groupName: "IPsoft",
+          rotationDegree: "10"
+        },
+        {
+        id: "czvasSD",
+        groupName: "1",
+        rotationDegree: "10"
+        }
+      ])
     const onSelect = (id) => {
         console.log("selected",id)
         setselectedId(id); 
@@ -49,6 +72,7 @@ const Annotator = ({ options,
             />
         )
     }
+
     return (
         <div id="AnnotationWorkArea" className="AnnotationWorkArea" style={isDraggable ? {cursor: 'grab'}: {cursor: 'default'}}>
             <ReactPictureAnnotation
@@ -61,6 +85,38 @@ const Annotator = ({ options,
             annotationData={bboxesData}
             selectedId={selectedId}
             annotationStyle={IShapeStyle}
+            inputElement={(annotation) => (
+                <CustomInputControl
+                    annotation={annotation}
+                    onDelete={(id) => {
+                        const newBboxesData = bboxesData.filter(
+                            (item) => item.id!== selectedId
+                        );
+                        setbboxesData(newBboxesData);
+                    }}
+                    onNameChange={(id, newName) => {
+                        console.log("thiis is the id to be renamed ,", id, newName)
+                        const newBboxesData = bboxesData.map((item) =>
+                            item.id === selectedId? {...item, comment: newName } : item
+                        );
+                        setbboxesData(newBboxesData);
+                    }}
+                    onGroupNameChange={(id, newGroupName) => {
+                        const newBoxLevelData = boxLevelData.map((item) =>
+                            item.id === selectedId? {...item, groupName: newGroupName } : item
+                        );
+                        setBoxLevelData(newBoxLevelData)
+                        console.log("this is new box level ", newBoxLevelData)
+                    }}
+                    onRotationChange={(id, newRotationDegree) => {
+                        const newBoxLevelData = boxLevelData.map((item) =>
+                            item.id === selectedId? {...item, rotationDegree: newRotationDegree } : item
+                        );
+                        setBoxLevelData(newBoxLevelData)
+                        console.log("this is new box level ", newBoxLevelData)
+                    }}
+                />
+            )}
             />
         </div>
     );

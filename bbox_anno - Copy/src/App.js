@@ -15,13 +15,14 @@ import {
     GridColumn,
     Radio,
     Header,
-    Icon
+    Icon,
+    Container
 } from 'semantic-ui-react'
 import InputField from './components/InputField'
 import Draggable from "react-draggable";
 import StackerMenu from "./components/StackerMenu"
-
-
+import TriggerButtons from "./components/TriggerButtons";
+import InformationDisplays from "./components/InformationDisplays";
 const App = ({options, idata, annotate_image}) => {
     const[pageSize, setPageSize] = useState({
         width: window.innerWidth,
@@ -380,6 +381,12 @@ const App = ({options, idata, annotate_image}) => {
     }
 
     const [viewBboxes, setViewBboxes] = useState(false)
+
+    const [pageInformation, setPageInformation] = useState([
+        {key: 'item1', value:'value1'},
+        {key: 'item2', value:'value2'},
+        {key: 'item3', value:'value3'},
+    ])
     return (
         <div className="App">
             <div className="AnnotatorBorder" style={{ width: 2/3*pageSize.width, height: 2/3*pageSize.height}}>
@@ -498,6 +505,16 @@ const App = ({options, idata, annotate_image}) => {
                     />
                 </div>
             </Draggable>
+            <Draggable disabled = {!isDraggable}>
+                <div className="measure-contour-trigger" style={isDraggable ? {cursor:'grab'}: {cursor: 'default'}}>
+                    <TriggerButtons/>
+                </div>
+            </Draggable>
+            <div className="point-info-display" style={isDraggable ? {cursor:'grab'}: {cursor: 'default'}}>
+                <Container textAlign="center" style={{height:'95px'}}>
+                    <InformationDisplays pageInformation={pageInformation}/>
+                </Container>
+            </div>
         </div>
     );
 }
