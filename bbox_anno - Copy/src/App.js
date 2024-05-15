@@ -46,6 +46,28 @@ const App = ({options, idata, annotate_image}) => {
         bbox_x: 0,
         bbox_y: 0
     })
+    const [boxLevelData, setBoxLevelData] = useState([
+        {
+          id: "BRa2xX",
+          groupName: "GROUPB",
+          rotationDegree: "10"
+        },
+        {
+          id: "QtPJeW",
+          groupName: "GROUPA",
+          rotationDegree: "90"
+        },
+        {
+          id: "czysBh",
+          groupName: "GROUPA",
+          rotationDegree: "10"
+        },
+        {
+        id: "czvasSD",
+        groupName: "GROUPC",
+        rotationDegree: "90"
+        }
+      ])
     const updateCurrentBbboxAdjustment = () => {
         const newAdjustment = {
             bboxHeight: null,
@@ -184,7 +206,17 @@ const App = ({options, idata, annotate_image}) => {
         const handleKeyUp = (event) => {
             if (event.key === 'Control') {
                 setIsDraggable(false)
-                setbboxesData(bboxesData.filter(data => data.comment !== undefined))
+                // setbboxesData(bboxesData.filter(data => data.comment !== undefined))
+                const indicesToRemove = bboxesData.reduce((acc, obj, index) => {
+                    if(obj.comment === undefined) {
+                        acc.push(index)
+                    }
+                    return acc
+                }, [])
+                const filteredData = bboxesData.filter((obj, index) => !indicesToRemove.includes(index))
+                setbboxesData(filteredData)
+                const filteredboxLevelData = boxLevelData.filter((obj, index) => !indicesToRemove.includes(index))
+                setBoxLevelData(filteredboxLevelData)
             } else if (event.key === 'Shift') {
                 setisShifted(false)
             }
@@ -387,6 +419,33 @@ const App = ({options, idata, annotate_image}) => {
         {key: 'item2', value:'value2'},
         {key: 'item3', value:'value3'},
     ])
+
+    useEffect(() => {
+        bboxesData.forEach(bboxesObj => {
+            const idExists = boxLevelData.some(boxObj => boxObj.id === bboxesObj.id)
+            if(!idExists){
+                if(boxLevelData.length >= 1) {
+                    const randomIndex = Math.floor(Math.random() * boxLevelData.length)
+                    const randomObject = boxLevelData[randomIndex]
+        
+                    const newObject = {
+                        id: bboxesObj.id,
+                        groupName: randomObject.groupName,
+                        rotationDegree: randomObject.rotationDegree
+                    }
+                    setBoxLevelData(prevData => [...prevData, newObject])
+                }
+                else{
+                    const newObject = {
+                        id: bboxesObj.id,
+                        groupName: null,
+                        rotationDegree: null
+                    }
+                    setBoxLevelData(prevData => [...prevData, newObject])
+                }
+            }
+        })
+    })
     return (
         <div className="App">
             <div className="AnnotatorBorder" style={{ width: 2/3*pageSize.width, height: 2/3*pageSize.height}}>
@@ -406,6 +465,8 @@ const App = ({options, idata, annotate_image}) => {
                             isDraggable={isDraggable}
                             setdeltaAdjustment={setdeltaAdjustment}
                             viewBboxes={viewBboxes}
+                            setBoxLevelData = {setBoxLevelData}
+                            boxLevelData = {boxLevelData}
                         />
                     </div>
                 </Draggable>
